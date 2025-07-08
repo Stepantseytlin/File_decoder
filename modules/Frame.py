@@ -28,7 +28,7 @@ class parameter:
             decoded = self.func_dict[str(self.decode_func)](self.__raw_data__,self.coef)
         except:
             self.__raw_data__ : str = self.__raw_data__
-            print("function not defined for or data len is unappropriate\n", [i for i in str(self.decode_func)], self.__raw_data__, len(self.__raw_data__))
+            #print("function not defined for or data len is unappropriate\n", [i for i in str(self.decode_func)], self.__raw_data__, len(self.__raw_data__))
             decoded = self.__raw_data__
         self.decoded = decoded
         return self.decoded
@@ -54,13 +54,13 @@ class one_frame:
                     self.frame[n].__raw_data__ = ''
     def display_raw(self):
         for par in self.frame:
-            print(par.time_stamp, par.name, (par.__raw_data__))
+            pass#print(par.time_stamp, par.name, (par.__raw_data__))
 
     def display_decoded(self):
         data = ""
         for par in self.frame:
             par.decode()
-            self.named_frame_dict[par.name] = par.decoded
+            self.named_frame_dict[par.name] =par.time_stamp, par.decoded
             #print(par.time_stamp, par.name,par.decoded)
             data += str(par.time_stamp) +" "+ str(par.name) +" "+str(par.decoded) + " \n"
         return data

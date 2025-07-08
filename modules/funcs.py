@@ -15,7 +15,7 @@ def float_IEEE754(binary,coef=1.0)->float:
     :return: число с плавающей точкой (float).
     """
     if len(binary) != 32 or not all(bit in '01' for bit in binary):
-        print(binary)
+        #print(binary)
         raise ValueError("Число должно быть строкой из 32 символов, содержащих только 0 или 1.")
     
     # Преобразуем двоичную строку в целое число

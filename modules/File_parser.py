@@ -26,7 +26,8 @@ class ONE_FILE(RULES):
     def read_parameters(self, rules_path : str):
         super().__init__(rules_path)
         self.FRAME_TEMPLATE = self.read_protocol()
-    def read_file(self):
+    def read_file(self,disable_collisions):
+        block_headers = False
         with open(self.FILE_PATH, 'r') as f:
             dat = f.read(2)
             data = []
@@ -60,13 +61,16 @@ class ONE_FILE(RULES):
                     self.raw_for_alloc,self.times_for_alloc = [],[]
                     self.bytes_cntr = 0
                     self.enable = False
+                    if disable_collisions: block_headers = False
                 
-                if len(load.split(self.marker))>1:
+                if len(load.split(self.marker))>1 and block_headers == False:
                     ### Если в строке Заголовок пакета
+                        # Блокируем прием пакетов, если коллизия запрещена 
+                        if disable_collisions: block_headers = True
                         self._+=1
                         self.enable = True
                         self.header = True
-                if n < len(lines)-1:
+                if n < len(lines)-1 and block_headers == False:
                     ### Если строка не последняя, то проверяем следующую строку на наличие разорванного заголовка
                         next_date = lines[n+1].split(' ')[0]
                         next_time = lines[n+1].split(' ')[1]
@@ -75,12 +79,15 @@ class ONE_FILE(RULES):
                         next_load = next_data[1] if len(next_data)==2 else ''
                         if len( ((''.join(load.split("0x") ).split(self.marker)[-1] )+"-"+ (''.join(next_load.split("0x"))).split(self.marker)[0]).split(self.marker) )>1:
                             ### Проверяем наличие разорванного заголовка
+                            # Блокируем прием пакетов, если коллизия запрещена 
+                            if disable_collisions: block_headers = True
                             self.enable = True
                             self._+=1
                             self.header2 = True
                            
                 
                 if self.enable and self.bytes_cntr < self.length:
+                    if disable_collisions!=True:
                     ### Если был найден хотя бы один заголовок
                         if (self.header or self.header2) and (self.bytes_cntr>0):
                             ### Если пакет пришел раньше конца предыдущего, то есть КОЛЛИЗИЯ 
@@ -116,14 +123,37 @@ class ONE_FILE(RULES):
                                 self.times_for_alloc += [next_time]
                             self.bytes_cntr = 0 
                             self.bytes_cntr += len(whole)
-                        
-
                         else:
                             if not self.header:
                                 self.raw_for_alloc = self.raw_for_alloc + (load.split('0x')[-1]).split('-')
                                 for i in range(len((load.split('0x')[-1]).split('-'))):
                                     self.times_for_alloc += [time]
                                 self.bytes_cntr += 8
+                    elif disable_collisions==True:
+                        if self.header:
+                                ### Если заголовок в строке 
+                            if (load.split('0x')[-1]).split(self.marker)[-1]:
+                                
+                                self.raw_for_alloc += (((load.split('0x')[-1].split(self.marker)))[-1].split('-'))[1:]
+                                for i in range(len((''.join( load.split('0x')[-1].split("-"+self.marker+"-")[-1])).split('-'))):
+                                    self.times_for_alloc += [time]
+                                self.bytes_cntr = 0 
+                                self.bytes_cntr +=len((((load.split('0x')[-1].split(self.marker)))[-1].split('-'))[1:])
+                        elif self.header2:
+                            whole = self.marker.join((''.join(load.split('0x'))+'-'+''.join(next_load.split("0x"))).split(self.marker)[1:])#((''.join(load.split("0x") ).split(self.marker)[-1] )+"-"+ (''.join(next_load.split("0x"))).split(self.marker)[0]).split(self.marker)[-1]
+                            whole = whole.split('-')[1:]
+                            self.raw_for_alloc += (whole)
+                            for i in range(len(whole)-1):
+                                self.times_for_alloc += [next_time]
+                            self.bytes_cntr = 0 
+                            self.bytes_cntr += len(whole)
+                        else:
+                            #if not self.header:
+                            self.raw_for_alloc = self.raw_for_alloc + (load.split('0x')[-1]).split('-')
+                            for i in range(len((load.split('0x')[-1]).split('-'))):
+                                self.times_for_alloc += [time]
+                            self.bytes_cntr += 8
+                        
                 elif self.enable and self.bytes_cntr >= self.length:
                         
                         self.enable = False
@@ -141,7 +171,7 @@ class ONE_FILE(RULES):
                 date = line.split(' ')[0]
                 time = line.split(' ')[1]
                 time = ' '.join([date, time])
-                self.ERRORS_dict[time] = line.split(' ')[5]
+                self.ERRORS_dict[self.n_errors-1] = line.split(' ')[5]
         return self.FRAMES
     def get_param_information(self,name:str):
         if name not in self.FRAME_TEMPLATE.names:

@@ -27,9 +27,16 @@ class parameter:
         try:
             decoded = self.func_dict[str(self.decode_func)](self.__raw_data__,self.coef)
         except:
-            self.__raw_data__ : str = self.__raw_data__
-            #print("function not defined for or data len is unappropriate\n", [i for i in str(self.decode_func)], self.__raw_data__, len(self.__raw_data__))
-            decoded = self.__raw_data__
+            if self.__raw_data__ =='':
+                decoded = 'нет в кадре'
+            elif str(self.decode_func) == 'float':
+                self.__raw_data__ : str = self.__raw_data__
+                insufficient_length =32 - len(self.__raw_data__)
+                #print("function not defined for or data len is unappropriate\n", [i for i in str(self.decode_func)], self.__raw_data__, len(self.__raw_data__))
+                decoded = self.func_dict[str(self.decode_func)]('0'*insufficient_length+self.__raw_data__)
+            
+            else:
+                decoded = 0
         self.decoded = decoded
         return self.decoded
 class one_frame:

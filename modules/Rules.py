@@ -31,7 +31,8 @@ class RULES:
         for param in self.parameters[1:]:
             name = param.split(' ')[0]
             format = param.split(' ')[5]
-            coef = param.split(' ')[6]
+            try: coef = param.split(' ')[6] 
+            except:coef = 1
             self.byte_start[name] = int(param.split(' ')[1])
             self.bit_start[name] = int(param.split(' ')[2])
             self.byte_lengths[name] = int(param.split(' ')[3])

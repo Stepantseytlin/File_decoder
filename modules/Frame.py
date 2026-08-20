@@ -23,6 +23,10 @@ class parameter:
                           'float ' : float_IEEE754,
                             "binary" : binary_yes_no
                           }
+        if dec_function == "binary" or isinstance(coef,dict):
+            self.to_plot = "raw"
+        else:
+            self.to_plot="value"
     def decode(self):
         try:
             decoded = self.func_dict[str(self.decode_func)](self.__raw_data__,self.coef)
@@ -62,7 +66,13 @@ class one_frame:
     def display_raw(self):
         for par in self.frame:
             pass#print(par.time_stamp, par.name, (par.__raw_data__))
-
+    def structurize(self):
+        data = ""
+        for par in self.frame:
+            par.decode()
+            self.named_frame_dict[par.name] =par.time_stamp, par.name, par.decoded, par.__raw_data__,par.to_plot
+            #print(par.time_stamp, par.name,par.decoded)
+            #data += str(par.time_stamp) +" "+ str(par.name) +" "+str(par.decoded) + " \n"
     def display_decoded(self):
         data = ""
         for par in self.frame:

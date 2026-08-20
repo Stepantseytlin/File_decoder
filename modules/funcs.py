@@ -1,9 +1,22 @@
 import struct
 
 def integer(raw,coef = 1.0):
-    integ = int(raw,2)*coef
-    return integ
+    if isinstance(coef, dict):
+        integ = int(raw,2)
+        dictionary :dict = coef
+        decoded = dictionary.get(integ, integ)
+
+        return decoded
+    else:
+        integ = int(raw,2)*coef
+        return integ
 def binary_yes_no(raw,coef = None):
+    if isinstance(coef, dict):
+            integ = int(raw,2)
+            dictionary :dict = coef
+            decoded = dictionary.get(integ, integ)
+    
+            return decoded
     return "ready" if raw else "not ready"
     
     

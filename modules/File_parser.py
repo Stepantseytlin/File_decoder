@@ -1,7 +1,8 @@
 from .Rules import RULES
 from .Frame import one_frame
 class ONE_FILE(RULES):
-    def __init__(self, path : str):
+    def __init__(self, path : str,numProtocol:int=0):
+        self.numProtocol = numProtocol
         self.FILE_PATH = path
         self._ = 0 
         self.FRAMES : list[one_frame]= []
@@ -18,13 +19,15 @@ class ONE_FILE(RULES):
         self.n_collisions = 0
         self.header = False ### Маркер в середине строки или в начале
         self.header2 = False ### Маркер на границе строк
+        return 
     @property
     def new_frame(self) -> one_frame:
         self.n_frames+=1
         frame :one_frame = super().start_new_frame()
         return frame
+    
     def read_parameters(self, rules_path : str):
-        super().__init__(rules_path)
+        super().__init__(rules_path,self.numProtocol)
         self.FRAME_TEMPLATE = self.read_protocol()
     def read_file(self,disable_collisions):
         block_headers = False
@@ -178,7 +181,13 @@ class ONE_FILE(RULES):
             return 0
         parameter_dynamics = []
         for frame in self.FRAMES:
+            frame.structurize()
             parameter_dynamics.append(frame.named_frame_dict[name])
         return parameter_dynamics
-    
+    def get_parameterwise_details(self):
+        
+        Allinfo = {}
+        for name in self.FRAME_TEMPLATE.names:
+            Allinfo[name] = self.get_param_information(name)
+        return Allinfo
             
